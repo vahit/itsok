@@ -1,6 +1,6 @@
 #!/usr/sbin/env bash
 
-set -exuo pipefaile
+set -exuo pipefail
 
 # load config file
 # shellcheck source=/home/vahit/.config/itsok.conf
@@ -23,7 +23,7 @@ echo "DataBase backup files health check process start at ${DATE}" > "${REPORT_F
 echo "Below list show that process steps status:" >> "${REPORT_FILE}"
 
 # mysqld bin file full path
-MYSQLD=$(which mysqld)
+MYSQLD="mysqld"
 
 function send_report() {
     if [[ ${FLAG} == "true" ]]; then
@@ -110,7 +110,7 @@ fi
 OUTPUT=$(innobackupex --copy-back "${BACKUPS_DIR}"/"${TODAY_FILE}" 2>&1)
 RETURN_CODE=${?}
 if [[ ${RETURN_CODE} -eq 0 ]]; then
-    if [[ $(echo "${OUTPUT}" | grep -oE ".{13}$") == "completed OK!" ]]; then
+    if [[ $(echo "${OUTPUT}" | tail --lines=1 | grep -oE ".{13}$") == "completed OK!" ]]; then
         echo "[✓] Restore backup" >> "${REPORT_FILE}"
     else
         echo "[x] Restore backup" >> "${REPORT_FILE}"
