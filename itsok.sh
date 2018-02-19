@@ -8,6 +8,10 @@ source "${HOME}"/.config/itsok.conf
 
 BACKUP_PREFIX=${BACKUP_PREFIX:-$(date +"%Y-%m-%d")}
 LOG_FILE=${LOG_FILE:-"/var/log/itsok.log"}
+MYSQL_DATADIR=$(grep -i datadir /etc/mysql/my.cnf | awk '{print $3}')
+if [[ -z $MYSQL_DATADIR ]]; then
+    MYSQL_DATADIR=$(grep -i datadir /etc/mysql/my.cnf | cut -f2 -d"=")
+fi
 
 # FLAG is a boolean variable and show process final status.
 # Default is True
@@ -96,14 +100,14 @@ fi
 # stop mysqld service if it's running.
 mysql_service stop
 
-# empty "/var/lib/mysql" directory
-OUTPUT=$(rm -r /var/lib/mysql)
+# empty MySQL datadir directory
+OUTPUT=$(rm -r ${MYSQL_DATADIR})
 RETURN_CODE=${?}
 if [[ ${RETURN_CODE} -ne 0 ]]; then
-    echo "[x] Remove /var/lib/mysql dir" >> "${REPORT_FILE}"
+    echo "[x] Remove MySQL datadir" >> "${REPORT_FILE}"
     echo "${OUTPUT}" >> "${LOG_FILE}"
 else
-    echo "[✓] Remove /var/lib/mysql dir" >> "${REPORT_FILE}"
+    echo "[✓] Remove MySQL datadir" >> "${REPORT_FILE}"
 fi
 
 # restore DB file
@@ -121,14 +125,14 @@ else
     echo -e "${OUTPUT}" >> "${LOG_FILE}"
 fi
 
-# correct /var/lib/mysql permissions
-OUTPUT=$(chown -R mysql:mysql /var/lib/mysql)
+# correct MySQL datadir permissions
+OUTPUT=$(chown -R mysql:mysql ${MYSQL_DATADIR})
 RETURN_CODE=${?}
 if [[ ${RETURN_CODE} -ne 0 ]]; then
-    echo "[x] Correct /var/lib/mysql permissions" >> "${REPORT_FILE}"
+    echo "[x] Correct MySQL datadir permissions" >> "${REPORT_FILE}"
     echo "${OUTPUT}" >> "${LOG_FILE}"
 else
-    echo "[✓] Correct /var/lib/mysql permissons" >> "${REPORT_FILE}"
+    echo "[✓] Correct MySQL datadir permissons" >> "${REPORT_FILE}"
 fi
 
 # start MySQL service
